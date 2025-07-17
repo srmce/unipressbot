@@ -1,0 +1,53 @@
+name: Bluesky University Press Sales Bot
+
+on:
+  schedule:
+    # Run every 12 hours at 6 AM and 6 PM UTC
+    - cron: '0 6,18 * * *'
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm install
+      
+    - name: Create data directory
+      run: mkdir -p data
+      
+    - name: Download processed posts data
+      continue-on-error: true
+      run: |
+        if [ -f "data/processed_posts.json" ]; then
+          echo "Processed posts file already exists"
+        else
+          echo "[]" > data/processed_posts.json
+        fi
+        
+    - name: Run bot
+      env:
+        BLUESKY_USERNAME: ${{ secrets.BLUESKY_USERNAME }}
+        BLUESKY_PASSWORD: ${{ secrets.BLUESKY_PASSWORD }}
+        SALES_KEYWORDS: ${{ secrets.SALES_KEYWORDS }}
+      run: node index.js
+      
+    - name: Commit and push data updates
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add data/processed_posts.json
+        git diff --staged --quiet || git commit -m "Update processed posts data"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
