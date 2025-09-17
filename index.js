@@ -39,34 +39,24 @@ class UniversityPressSalesBot {
     console.log('Authenticated successfully');
   }
 
-  async loadFollowingAccounts() {
-    console.log('Loading following accounts...');
-    
-    let allFollows = [];
-    let cursor;
-    
-    do {
-      const follows = await this.agent.getFollows({
-        actor: this.config.bluesky.username,
-        cursor,
-        limit: 100
-      });
-      
-      allFollows = allFollows.concat(follows.data.follows);
-      cursor = follows.data.cursor;
-      
-    } while (cursor);
-
-    this.universityPresses.clear();
-    allFollows.forEach(follow => {
-      this.universityPresses.set(follow.handle, {
-        name: follow.displayName || follow.handle,
-        handle: follow.handle
-      });
+ async loadMonitoredAccounts() {
+  console.log('Loading monitored accounts from list...');
+  
+  const response = await this.agent.app.bsky.graph.getList({
+    list: this.config.universityPressListUri,
+    limit: 100
+  });
+  
+  this.universityPresses.clear();
+  response.data.items.forEach(item => {
+    this.universityPresses.set(item.subject.handle, {
+      name: item.subject.displayName || item.subject.handle,
+      handle: item.subject.handle
     });
-    
-    console.log(`Monitoring ${this.universityPresses.size} accounts`);
-  }
+  });
+  
+  console.log(`Monitoring ${this.universityPresses.size} accounts`);
+}
 
   async checkForSalesPosts() {
     console.log('Checking for sales posts...');
@@ -123,7 +113,7 @@ class UniversityPressSalesBot {
     try {
       await this.loadProcessedPosts();
       await this.authenticate();
-      await this.loadFollowingAccounts();
+      await this.loadMonitoredAccounts();
       await this.checkForSalesPosts();
       
       console.log('Bot run completed successfully');
@@ -143,6 +133,7 @@ const config = {
   salesKeywords: process.env.SALES_KEYWORDS ? 
     process.env.SALES_KEYWORDS.split(',').map(k => k.trim()) : 
     ['sale', 'discount', 'offer', 'special', 'promotion', 'deal']
+  universityPressListUri: process.env.UNIVERSITY_PRESS_LIST_URI
 };
 
 // Validate configuration
