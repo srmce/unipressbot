@@ -39,6 +39,7 @@ jobs:
         BLUESKY_USERNAME: ${{ secrets.BLUESKY_USERNAME }}
         BLUESKY_PASSWORD: ${{ secrets.BLUESKY_PASSWORD }}
         SALES_KEYWORDS: ${{ secrets.SALES_KEYWORDS }}
+        UNIVERSITY_PRESS_LIST_URI: ${{ secrets.UNIVERSITY_PRESS_LIST_URI }}
       run: node index.js
       
     - name: Commit and push data updates
