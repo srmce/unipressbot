@@ -132,7 +132,7 @@ const config = {
   },
   salesKeywords: process.env.SALES_KEYWORDS ? 
     process.env.SALES_KEYWORDS.split(',').map(k => k.trim()) : 
-    ['sale', 'discount', 'offer', 'special', 'promotion', 'deal']
+    ['sale', 'discount', 'offer', 'special', 'promotion', 'deal'],
   universityPressListUri: process.env.UNIVERSITY_PRESS_LIST_URI
 };
 
